@@ -20,6 +20,7 @@
         main {
             flex: 1;
             display: flex;
+            flex-direction: column; /* Ensure main content is aligned in a column */
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -103,16 +104,14 @@
         <div class="confirmation-box">
             <p class="confirmation-text">Ready to Boost Your Energy? Confirm Your Age & Click Watch Now!</p>
             <a href="https://track.theman-health.com/">
-            <button class="btn" id="proceedButton">WATCH NOW</button>
-        </a>
+                <button class="btn" id="proceedButton">WATCH NOW</button>
+            </a>
             <br><br>
             <span id="timer">Access in 15 seconds</span>
         </div>
-    <br><br>
-     <iframe width="560" height="315" src="https://www.youtube.com/embed/PavYAOpVpJI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
+        <!-- Embed YouTube Video Below the Confirmation Box -->
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/PavYAOpVpJI" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
     </main>
-        
     <script>
         // Timer Countdown
         let timeLeft = 15;
@@ -131,26 +130,26 @@
         let timerInterval = setInterval(updateTimer, 1000);
       </script>
   
-  <script>
-          // Attach URL parameters to the redirect link
-          document.addEventListener('DOMContentLoaded', function() {
-              var proceedButton = document.querySelector('a');
-              var currentUrlParams = new URLSearchParams(window.location.search);
+    <script>
+        // Attach URL parameters to the redirect link
+        document.addEventListener('DOMContentLoaded', function() {
+            var proceedButton = document.querySelector('a');
+            var currentUrlParams = new URLSearchParams(window.location.search);
   
-              var newHref = proceedButton.href;
-              if (!newHref.includes('?')) {
-                  newHref += '?';
-              } else {
-                  newHref += '&';
-              }
+            var newHref = proceedButton.href;
+            if (!newHref.includes('?')) {
+                newHref += '?';
+            } else {
+                newHref += '&';
+            }
   
-              currentUrlParams.forEach(function(value, key) {
-                  newHref += `${encodeURIComponent(key)}=${encodeURIComponent(value)}&`;
-              });
-              newHref = newHref.slice(0, -1); // Remove the last '&'
-              proceedButton.href = newHref;
-          });
-      </script>
+            currentUrlParams.forEach(function(value, key) {
+                newHref += `${encodeURIComponent(key)}=${encodeURIComponent(value)}&`;
+            });
+            newHref = newHref.slice(0, -1); // Remove the last '&'
+            proceedButton.href = newHref;
+        });
+    </script>
     <footer>
         <div>Copyright 2024 - The Man Health ©</div>
         <div class="footer-links">
