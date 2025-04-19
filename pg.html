@@ -8,128 +8,7 @@
 
     <script src="https://track.onebetter-life.site/unilpclick.js?attribution=lastpaid&cookiedomain=health-better.site&cookieduration=90&defaultcampaignid=68040fe76843f7aac394922c&regviewonce=false"></script>
 
-    <script>
-      /* ---------- utilitário para ler cookies ---------- */
-      function getCookie(name) {
-        // procura "name=valor" entre os cookies
-        const match = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith(name + "="));
-        return match ? decodeURIComponent(match.split("=")[1]) : null;
-      }
-
-      /* ---------- captura de identificadores ---------- */
-      const clickid = getCookie("rtkcid"); //  <-- troque "rtkcid" se o cookie tiver outro nome
-      const params = new URLSearchParams(window.location.search);
-      const rdtk_event_id = params.get("ip"); // continua vindo da URL (mantenha se precisar)
-
-      /* ---------- resto do script original ---------- */
-      function startOfferTimer() {
-        console.log("startOfferTimer iniciado");
-        const offerTimerElements =
-          document.querySelectorAll(".offer-timer-count");
-        let o = 1800; // 30 min
-
-        if (!offerTimerElements.length) {
-          console.log("Nenhum elemento .offer-timer-count encontrado");
-          return;
-        }
-
-        const r = setInterval(() => {
-          const e = String(Math.floor(o / 60)).padStart(2, "0");
-          const t = String(o % 60).padStart(2, "0");
-
-          offerTimerElements.forEach(
-            (el) => (el.innerHTML = `<h1>${e}:${t}</h1>`)
-          );
-          console.log(`Timer atualizado: ${e}:${t}`);
-
-          if (--o < 0) {
-            clearInterval(r);
-            console.log("Timer finalizado");
-          }
-        }, 1000);
-      }
-
-      function displayOnPitch() {
-        startOfferTimer();
-        document
-          .querySelectorAll(".display-on-pitch")
-          .forEach((el) => el.classList.remove("display-on-pitch"));
-        document
-          .querySelector(".scroll-on-pitch")
-          ?.scrollIntoView({ behavior: "smooth" });
-      }
-
-      if (clickid) {
-        const base = "https://track.thenew-health.online/postback";
-        const encode = (v) => encodeURIComponent(v);
-        const q = (t) =>
-          `${base}?clickid=${encode(clickid)}&rdtk_event_id=${encode(
-            rdtk_event_id
-          )}&type=${encode(t)}`;
-
-        const urls = {
-          view: q("VSL View"),
-          play: q("VSL - Play"),
-          view3s: q("VSL - 3 View"),
-          view60s: q("VSL - 60 View"),
-          view120s: q("VSL - 120 View"),
-          view300s: q("VSL - 300 View"),
-          pitchView: q("VSL - Pitch View"),
-          leadview: q("VSL - Lead View"),
-        };
-
-        window.addEventListener("DOMContentLoaded", () => {
-          fetch(urls.view);
-          if (localStorage.getItem("pitchView") === "true") {
-            console.log(
-              "Pitch View previamente visualizado. Abrindo todas as seções."
-            );
-            displayOnPitch();
-          }
-        });
-
-        window.addEventListener("message", ({ data }) => {
-          switch (data) {
-            case "VSL View":
-              fetch(urls.view);
-              break;
-            case "VSL - Lead View":
-              fetch(urls.leadview);
-              break;
-            case "VSL - Play":
-              fetch(urls.play);
-              document
-                .querySelectorAll(".hide-on-play")
-                .forEach((el) => (el.style.display = "none"));
-              document.body.style.backgroundColor = "#000";
-              break;
-            case "VSL - 3 View":
-              fetch(urls.view3s);
-              break;
-            case "VSL - 60 View":
-              fetch(urls.view60s);
-              break;
-            case "VSL - 120 View":
-              fetch(urls.view120s);
-              break;
-            case "VSL - 300 View":
-              fetch(urls.view300s);
-              break;
-            case "VSL - Pitch View":
-              localStorage.setItem("pitchView", "true");
-              fetch(urls.pitchView);
-              displayOnPitch();
-              break;
-          }
-          console.log(data);
-        });
-      } else {
-        console.log("Cookie 'rtkcid' não encontrado — sem clickid");
-      }
-    </script>
-
+   
     <link
       rel="preload"
       href="https://scripts.converteai.net/dc2bee22-f6b3-41ae-b28c-3a61aaac8be4/players/67d071ca632a0adc39bfc062/player.js"
@@ -373,5 +252,111 @@
         window.history.pushState({}, "");
       })(window);
     </script>
+
+    <script>
+/* ───────────────── utilidades ───────────────── */
+function getCookie(n) {
+  const m = document.cookie.match(
+    new RegExp('(?:^|; )' + n.replace(/([$?*|{}\(\)\[\]\\\/\+^])/g,'\\$1') + '=([^;]*)')
+  );
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+function getClickId() {
+  const urlClick = new URLSearchParams(location.search).get('rtkcid');
+  return urlClick                                       // redirect
+      || getCookie('rtkclickid-store')                  // universal / no‑redirect
+      || sessionStorage.getItem('rtkclickid');          // fallback enquanto o cookie não nasce
+}
+
+function waitForClickId(cb, tries = 50) {               // 50 × 100 ms ≈ 5 s
+  const cid = getClickId();
+  if (cid || tries === 0) return cb(cid);
+  setTimeout(() => waitForClickId(cb, tries - 1), 100);
+}
+
+/* ───────────────── script original ───────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  waitForClickId(function(clickid) {
+    if (!clickid) { console.log('Missing clickid'); return; }
+
+    const params        = new URLSearchParams(location.search),
+          rdtk_event_id = params.get('ip');
+
+    /* ====== A PARTIR DAQUI NADA MUDA ====== */
+    function startOfferTimer() {
+      console.log('startOfferTimer iniciado');
+      var e, t;
+      const offerTimerElements = document.querySelectorAll(".offer-timer-count");
+      let o = 1800; // 30 minutos
+
+      if (offerTimerElements.length === 0) {
+        console.log("Nenhum elemento encontrado com a classe 'offer-timer-count'");
+        return;
+      }
+
+      const h1Elements = document.querySelectorAll(".offer-timer-count h1");
+
+      if (h1Elements.length === 0) {
+        console.log("Nenhum elemento <h1> encontrado dentro de 'offer-timer-count'");
+      }
+
+      const r = setInterval(function () {
+        e = parseInt(o / 60, 10);
+        t = parseInt(o % 60, 10);
+        e = e < 10 ? "0" + e : e;
+        t = t < 10 ? "0" + t : t;
+
+        offerTimerElements.forEach(el => el.innerHTML = "<h1>" + e + ":" + t + "</h1>");
+        h1Elements.forEach(h1 => h1.textContent = `Oferta expira em ${e}:${t}`);
+        console.log(`Timer atualizado: ${e}:${t}`);
+        --o < 0 && (clearInterval(r), console.log("Timer finalizado"));
+      }, 1000);
+    }
+
+    function displayOnPitch() {
+      startOfferTimer();
+      document.querySelectorAll(".display-on-pitch").forEach(el => el.classList.remove("display-on-pitch"));
+      document.querySelector(".scroll-on-pitch")?.scrollIntoView({behavior:'smooth'});
+    }
+
+    const e = {
+      view:       `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20View`,
+      play:       `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%20Play`,
+      view3s:     `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%203%20View`,
+      view60s:    `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%2060%20View`,
+      view120s:   `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%20120%20View`,
+      view300s:   `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%20300%20View`,
+      pitchView:  `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%20Pitch%20View`,
+      leadview:   `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%20Lead%20View`
+    };
+
+    /* dispara VSL View logo que o clickid existe */
+    fetch(e.view);
+    if (localStorage.getItem('pitchView') === 'true') displayOnPitch();
+
+    window.addEventListener('message', t => {
+      if (t.data === 'VSL View')          fetch(e.view);
+      if (t.data === 'VSL - Lead View')   fetch(e.leadview);
+      if (t.data === 'VSL - Play') {
+        fetch(e.play);
+        document.querySelectorAll('.hide-on-play').forEach(el => el.style.display='none');
+        document.body.style.backgroundColor = '#000';
+      }
+      if (t.data === 'VSL - 3 View')      fetch(e.view3s);
+      if (t.data === 'VSL - 60 View')     fetch(e.view60s);
+      if (t.data === 'VSL - 120 View')    fetch(e.view120s);
+      if (t.data === 'VSL - 300 View')    fetch(e.view300s);
+      if (t.data === 'VSL - Pitch View') {
+        localStorage.setItem('pitchView','true');
+        fetch(e.pitchView);
+        displayOnPitch();
+      }
+      console.log(t.data);
+    });
+  });
+});
+</script>
+
   </body>
 </html>
