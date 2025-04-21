@@ -338,7 +338,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (t.data === 'VSL - Play') {
         fetch(e.play);
         document.querySelectorAll('.hide-on-play').forEach(el => el.style.display='none');
-        document.body.style.backgroundColor = '#000';
       }
       if (t.data === 'VSL - 3 View')      fetch(e.view3s);
       if (t.data === 'VSL - 60 View')     fetch(e.view60s);
