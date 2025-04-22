@@ -233,7 +233,7 @@
     </script>
 
     <script>
-    /* ── utilitário adicionado ── */
+    /* ─── utilitário para ler cookie (inalterado) ─── */
     function getCookie(name) {
         const m = document.cookie.match(
             new RegExp('(?:^|; )' + name.replace(/([$?*|{}\(\)\[\]\\\/\+^])/g,'\\$1') + '=([^;]*)')
@@ -241,13 +241,29 @@
         return m ? decodeURIComponent(m[1]) : null;
     }
 
-    /* ── Obtém identificadores ── */
-    const params = new URLSearchParams(window.location.search),
-          /* ↓↓↓ ÚNICA LINHA REALMENTE ALTERADA ↓↓↓ */
-          clickid = params.get("rtkcid") || getCookie("rtkclickid-store") || sessionStorage.getItem("rtkclickid"),
-          rdtk_event_id = params.get("ip");
+    /* ─── helper para enviar postback à prova de “fechar aba” ─── */
+    function ping(url){
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon(url);                  // POST assíncrono seguro
+        } else {
+            fetch(url, {mode:'no-cors', keepalive:true}); // fallback antigo
+        }
+    }
 
-    /* ── DAQUI PRA BAIXO É O SEU CÓDIGO ORIGINAL ── */
+    /* ─── captura de identificadores ─── */
+    const params  = new URLSearchParams(window.location.search),
+          clickid = params.get("rtkcid") || getCookie("rtkclickid-store") || sessionStorage.getItem("rtkclickid"),
+          rawIp   = params.get("ip");
+    const rdtk_event_id = rawIp && rawIp !== 'null' && rawIp.trim() !== '' ? rawIp : null;
+
+    /* monta URL de postback sem espaços no type e sem rdtk_event_id nulo */
+    const u = t => {
+        let url = `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&type=${encodeURIComponent(t)}`;
+        if (rdtk_event_id) url += `&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}`;
+        return url;
+    };
+
+    /* ─── SEU CÓDIGO ORIGINAL A PARTIR DAQUI ─── */
 
     function startOfferTimer() {
         console.log('startOfferTimer iniciado');
@@ -306,18 +322,18 @@
 
     if (clickid) {
         let e = {
-            view: `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20View`,
-            play: `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%20Play`,
-            view3s: `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%203%20View`,
-            view60s: `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%2060%20View`,
-            view120s: `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%20120%20View`,
-            view300s: `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%20300%20View`,
-            pitchView: `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%20Pitch%20View`,
-            leadview: `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}&type=VSL%20-%20Lead%20View`
+            view:       u('VSL_View'),
+            play:       u('VSL_Play'),
+            view3s:     u('VSL_3_View'),
+            view60s:    u('VSL_60_View'),
+            view120s:   u('VSL_120_View'),
+            view300s:   u('VSL_300_View'),
+            pitchView:  u('VSL_Pitch_View'),
+            leadview:   u('VSL_Lead_View')
         };
 
         window.addEventListener("DOMContentLoaded", function() {
-            fetch(e.view);
+            ping(e.view);                                   // ← fetch trocado por ping
             const pitchViewFlag = localStorage.getItem("pitchView");
             if (pitchViewFlag === "true") {
                 console.log("Pitch View previamente visualizado. Abrindo todas as seções.");
@@ -327,39 +343,39 @@
 
         window.addEventListener("message", function(t) {
             if (t.data === "VSL View") {
-                fetch(e.view);
+                ping(e.view);
                 console.log("VSL View");
             }
             if (t.data === "VSL - Lead View") {
-                fetch(e.leadview);
+                ping(e.leadview);
                 console.log("VSL - Lead View");
             }
             if (t.data === "VSL - Play") {
-                fetch(e.play);
+                ping(e.play);
                 document.querySelectorAll('.hide-on-play').forEach(function(element) {element.style.display = 'none';});
                 console.log("VSL - Play");
             }
             if (t.data === "VSL - 3 View") {
-                fetch(e.view3s);
+                ping(e.view3s);
                 console.log("VSL - 3 View");
             }
             if (t.data === "VSL - 60 View") {
-                fetch(e.view60s);
+                ping(e.view60s);
                 console.log("VSL - 60 View");
             }
             if (t.data === "VSL - 120 View") {
-                fetch(e.view120s);
+                ping(e.view120s);
                 console.log("VSL - 120 View");
             }
             if (t.data === "VSL - 300 View") {
-                fetch(e.view300s);
+                ping(e.view300s);
                 console.log("VSL - 300 View");
             }
             if (t.data === "VSL - Pitch View") {
                 // Armazena a flag no localStorage
                 localStorage.setItem("pitchView", "true");
                 
-                fetch(e.pitchView);
+                ping(e.pitchView);
                 console.log("VSL - Pitch View");
                 
                 // Executa as ações para abrir todas as seções
@@ -370,6 +386,7 @@
         console.log("Missing clickid");
     } 
 </script>
+
 
 
   </body></html>
