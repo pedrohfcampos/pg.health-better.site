@@ -233,160 +233,89 @@
     </script>
 
     <script>
-    /* ─── utilitário para ler cookie (inalterado) ─── */
-    function getCookie(name) {
-        const m = document.cookie.match(
-            new RegExp('(?:^|; )' + name.replace(/([$?*|{}\(\)\[\]\\\/\+^])/g,'\\$1') + '=([^;]*)')
-        );
-        return m ? decodeURIComponent(m[1]) : null;
+/* ─ util para cookie ─ */
+function getCookie(n){
+  const m=document.cookie.match(new RegExp('(?:^|; )'+n.replace(/([$?*|{}\(\)\[\]\\\/\+^])/g,'\\$1')+'=([^;]*)'));
+  return m?decodeURIComponent(m[1]):null;
+}
+
+/* ─ ping via sendBeacon ─ */
+function ping(url){
+  if(navigator.sendBeacon){
+    navigator.sendBeacon(url);
+  }else{
+    fetch(url,{mode:'no-cors',keepalive:true});
+  }
+}
+
+/* ─ captura IDs ─ */
+const params  = new URLSearchParams(location.search),
+      clickid = params.get('rtkcid') || getCookie('rtkclickid-store') || sessionStorage.getItem('rtkclickid'),
+      rawIp   = params.get('ip');
+const rdtk_event_id = rawIp && rawIp !== 'null' && rawIp.trim() !== '' ? rawIp : null;
+
+/* monta URL sem rdtk_event_id vazio */
+const eventPart = rdtk_event_id ? `&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}` : '';
+
+const e = {
+  view:       `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${eventPart}&type=VSL%20View`,
+  play:       `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${eventPart}&type=VSL%20-%20Play`,
+  view3s:     `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${eventPart}&type=VSL%20-%203%20View`,
+  view60s:    `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${eventPart}&type=VSL%20-%2060%20View`,
+  view120s:   `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${eventPart}&type=VSL%20-%20120%20View`,
+  view300s:   `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${eventPart}&type=VSL%20-%20300%20View`,
+  pitchView:  `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${eventPart}&type=VSL%20-%20Pitch%20View`,
+  leadview:   `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${eventPart}&type=VSL%20-%20Lead%20View`
+};
+
+/* ─ funções originais ─ */
+function startOfferTimer(){
+  var e,t,o=1800,r;
+  const offerTimerElements=document.querySelectorAll('.offer-timer-count'),
+        h1Elements=document.querySelectorAll('.offer-timer-count h1');
+  if(!offerTimerElements.length)return;
+  r=setInterval(()=>{
+    e=String(Math.floor(o/60)).padStart(2,'0');
+    t=String(o%60).padStart(2,'0');
+    offerTimerElements.forEach(el=>el.innerHTML=`<h1>${e}:${t}</h1>`);
+    h1Elements.forEach(h1=>h1.textContent=`Oferta expira em ${e}:${t}`);
+    --o<0&&clearInterval(r);
+  },1000);
+}
+function displayOnPitch(){
+  startOfferTimer();
+  document.querySelectorAll('.display-on-pitch').forEach(el=>el.classList.remove('display-on-pitch'));
+  document.querySelector('.scroll-on-pitch')?.scrollIntoView({behavior:'smooth'});
+}
+
+/* ─ listener principal ─ */
+if(clickid){
+  window.addEventListener('DOMContentLoaded',()=>{
+    ping(e.view);
+    if(localStorage.getItem('pitchView')==='true') displayOnPitch();
+  });
+
+  window.addEventListener('message',t=>{
+    if(t.data==='VSL View')            ping(e.view);
+    if(t.data==='VSL - Lead View')     ping(e.leadview);
+    if(t.data==='VSL - Play'){
+      ping(e.play);
+      document.querySelectorAll('.hide-on-play').forEach(el=>el.style.display='none');
+      /* linha que escurecia o fundo foi removida */
     }
-
-    /* ─── helper para enviar postback à prova de “fechar aba” ─── */
-    function ping(url){
-        if (navigator.sendBeacon) {
-            navigator.sendBeacon(url);                  // POST assíncrono seguro
-        } else {
-            fetch(url, {mode:'no-cors', keepalive:true}); // fallback antigo
-        }
+    if(t.data==='VSL - 3 View')        ping(e.view3s);
+    if(t.data==='VSL - 60 View')       ping(e.view60s);
+    if(t.data==='VSL - 120 View')      ping(e.view120s);
+    if(t.data==='VSL - 300 View')      ping(e.view300s);
+    if(t.data==='VSL - Pitch View'){
+      localStorage.setItem('pitchView','true');
+      ping(e.pitchView);
+      displayOnPitch();
     }
-
-    /* ─── captura de identificadores ─── */
-    const params  = new URLSearchParams(window.location.search),
-          clickid = params.get("rtkcid") || getCookie("rtkclickid-store") || sessionStorage.getItem("rtkclickid"),
-          rawIp   = params.get("ip");
-    const rdtk_event_id = rawIp && rawIp !== 'null' && rawIp.trim() !== '' ? rawIp : null;
-
-    /* monta URL de postback sem espaços no type e sem rdtk_event_id nulo */
-    const u = t => {
-        let url = `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}&type=${encodeURIComponent(t)}`;
-        if (rdtk_event_id) url += `&rdtk_event_id=${encodeURIComponent(rdtk_event_id)}`;
-        return url;
-    };
-
-    /* ─── SEU CÓDIGO ORIGINAL A PARTIR DAQUI ─── */
-
-    function startOfferTimer() {
-        console.log('startOfferTimer iniciado');
-        var e, t;
-        const offerTimerElements = document.querySelectorAll(".offer-timer-count");
-        let o = 1800; // Tempo em segundos (30 minutos)
-
-        if (offerTimerElements.length === 0) {
-            console.log("Nenhum elemento encontrado com a classe 'offer-timer-count'");
-            return;
-        }
-
-        // Seleciona todas as tags H1 dentro de .offer-timer-count
-        const h1Elements = document.querySelectorAll(".offer-timer-count h1");
-
-        if (h1Elements.length === 0) {
-            console.log("Nenhum elemento <h1> encontrado dentro de 'offer-timer-count'");
-        }
-
-        var r = setInterval(function() {
-            e = parseInt(o / 60, 10);
-            t = parseInt(o % 60, 10);
-            e = e < 10 ? "0" + e : e;
-            t = t < 10 ? "0" + t : t;
-
-            // Atualiza o conteúdo das .offer-timer-count
-            offerTimerElements.forEach(function(element) { 
-                element.innerHTML = "<h1>" +e + ":" + t+"</h1>";
-            });
-
-            // Atualiza o conteúdo das tags H1 dentro de .offer-timer-count
-            h1Elements.forEach(function(h1) {
-                h1.textContent = `Oferta expira em ${e}:${t}`;
-            });
-
-            console.log(`Timer atualizado: ${e}:${t}`);
-            --o < 0 && (clearInterval(r), console.log("Timer finalizado"));
-        }, 1000);
-    }
-
-    function displayOnPitch() {
-        startOfferTimer();
-        document.querySelectorAll(".display-on-pitch").forEach(element => {
-            element.classList.remove("display-on-pitch");
-        });
-        const scrollElement = document.querySelector(".scroll-on-pitch");
-
-        if (scrollElement) {
-            scrollElement.scrollIntoView({
-                behavior: "smooth"
-            });
-        }
-
-        // Aqui você pode adicionar quaisquer outras ações necessárias para "abrir todas as páginas"
-    }
-
-    if (clickid) {
-        let e = {
-            view:       u('VSL_View'),
-            play:       u('VSL_Play'),
-            view3s:     u('VSL_3_View'),
-            view60s:    u('VSL_60_View'),
-            view120s:   u('VSL_120_View'),
-            view300s:   u('VSL_300_View'),
-            pitchView:  u('VSL_Pitch_View'),
-            leadview:   u('VSL_Lead_View')
-        };
-
-        window.addEventListener("DOMContentLoaded", function() {
-            ping(e.view);                                   // ← fetch trocado por ping
-            const pitchViewFlag = localStorage.getItem("pitchView");
-            if (pitchViewFlag === "true") {
-                console.log("Pitch View previamente visualizado. Abrindo todas as seções.");
-                displayOnPitch();
-            }
-        });
-
-        window.addEventListener("message", function(t) {
-            if (t.data === "VSL View") {
-                ping(e.view);
-                console.log("VSL View");
-            }
-            if (t.data === "VSL - Lead View") {
-                ping(e.leadview);
-                console.log("VSL - Lead View");
-            }
-            if (t.data === "VSL - Play") {
-                ping(e.play);
-                document.querySelectorAll('.hide-on-play').forEach(function(element) {element.style.display = 'none';});
-                console.log("VSL - Play");
-            }
-            if (t.data === "VSL - 3 View") {
-                ping(e.view3s);
-                console.log("VSL - 3 View");
-            }
-            if (t.data === "VSL - 60 View") {
-                ping(e.view60s);
-                console.log("VSL - 60 View");
-            }
-            if (t.data === "VSL - 120 View") {
-                ping(e.view120s);
-                console.log("VSL - 120 View");
-            }
-            if (t.data === "VSL - 300 View") {
-                ping(e.view300s);
-                console.log("VSL - 300 View");
-            }
-            if (t.data === "VSL - Pitch View") {
-                // Armazena a flag no localStorage
-                localStorage.setItem("pitchView", "true");
-                
-                ping(e.pitchView);
-                console.log("VSL - Pitch View");
-                
-                // Executa as ações para abrir todas as seções
-                displayOnPitch();
-            }
-        });
-    } else {
-        console.log("Missing clickid");
-    } 
+  });
+}else{
+  console.log('Missing clickid');
+}
 </script>
-
-
 
   </body></html>
