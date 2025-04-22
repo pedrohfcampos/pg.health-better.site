@@ -7,14 +7,12 @@
     <link href="css/style.css" rel="stylesheet" type="text/css" />
     <link rel="icon" href="/assets/images/oficial.png" type="image/png" />
 
-    <script src="https://track.onebetter-life.site/unilpclick.js?attribution=lastpaid&cookiedomain=health-better.site&cookieduration=90&defaultcampaignid=68040fe76843f7aac394922c&regviewonce=false"></script>
-
     <link rel="preload" href="https://scripts.converteai.net/dc2bee22-f6b3-41ae-b28c-3a61aaac8be4/ab-test/67fa5edf7066994f5aca03b4/player.js" as="script">
-<link rel="preload" href="https://scripts.converteai.net/lib/js/smartplayer/v1/smartplayer.min.js" as="script">
-<link rel="dns-prefetch" href="https://cdn.converteai.net">
-<link rel="dns-prefetch" href="https://scripts.converteai.net">
-<link rel="dns-prefetch" href="https://images.converteai.net">
-<link rel="dns-prefetch" href="https://api.vturb.com.br">
+    <link rel="preload" href="https://scripts.converteai.net/lib/js/smartplayer/v1/smartplayer.min.js" as="script">
+    <link rel="dns-prefetch" href="https://cdn.converteai.net">
+    <link rel="dns-prefetch" href="https://scripts.converteai.net">
+    <link rel="dns-prefetch" href="https://images.converteai.net">
+    <link rel="dns-prefetch" href="https://api.vturb.com.br">
     
     <style>
       body {
@@ -44,11 +42,7 @@
       .headline strong {
         color: red;
       }
-      .video-wrapper {
-        display: flex;
-        justify-content: center;
-        margin: 1rem 0;
-      }
+    
       .trusted-logos {
         display: flex;
         justify-content: center;
@@ -136,9 +130,7 @@
       </p>
     </div>
 
-    <div class="video-wrapper">
-        <script type="text/javascript" id="scr_67fa5edf7066994f5aca03b4"> var s=document.createElement("script"); s.src="https://scripts.converteai.net/dc2bee22-f6b3-41ae-b28c-3a61aaac8be4/ab-test/67fa5edf7066994f5aca03b4/player.js", s.async=!0,document.head.appendChild(s); </script>
-    </div>
+    <script type="text/javascript" id="scr_67fa5edf7066994f5aca03b4"> var s=document.createElement("script"); s.src="https://scripts.converteai.net/dc2bee22-f6b3-41ae-b28c-3a61aaac8be4/ab-test/67fa5edf7066994f5aca03b4/player.js", s.async=!0,document.head.appendChild(s); </script>
 
     <div class="trusted-logos">
       <img src="/assets/images/logo_news.webp" height="50" alt="Logo News" />
@@ -294,6 +286,74 @@
             window.history.pushState({}, '');
         })(window);
     </script>
+
+<script src="https://track.onebetter-life.site/unilpclick.js?attribution=lastpaid&cookiedomain=health-better.site&cookieduration=90&defaultcampaignid=68040fe76843f7aac394922c&regviewonce=false" defer></script>
+
+
+<script>
+    /* util cookie */
+    function getCookie(n) {
+      const m = document.cookie.match(new RegExp('(?:^|; )' + n.replace(/([$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'));
+      return m ? decodeURIComponent(m[1]) : null;
+    }
+    /* ping seguro */
+    function ping(url) {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(url);
+      } else {
+        fetch(url, { mode: 'no-cors', keepalive: true });
+      }
+    }
+    /* IDs */
+    const p = new URLSearchParams(location.search),
+          clickid = p.get('rtkcid') || getCookie('rtkclickid-store') || sessionStorage.getItem('rtkclickid'),
+          rawIp   = p.get('ip'),
+          rdtk    = rawIp && rawIp !== 'null' && rawIp.trim() !== '' ? rawIp : null,
+          evPart  = rdtk ? '&rdtk_event_id=' + encodeURIComponent(rdtk) : '';
+
+    if (clickid) {
+      const e = {
+        view:       `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${evPart}&type=VSL%20View`,
+        play:       `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${evPart}&type=VSL%20-%20Play`,
+        view3s:     `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${evPart}&type=VSL%20-%203%20View`,
+        view60s:    `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${evPart}&type=VSL%20-%2060%20View`,
+        view120s:   `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${evPart}&type=VSL%20-%20120%20View`,
+        view300s:   `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${evPart}&type=VSL%20-%20300%20View`,
+        pitchView:  `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${evPart}&type=VSL%20-%20Pitch%20View`,
+        leadview:   `https://track.thenew-health.online/postback?clickid=${encodeURIComponent(clickid)}${evPart}&type=VSL%20-%20Lead%20View`
+      };
+
+      window.addEventListener('DOMContentLoaded', () => {
+        ping(e.view);
+        if (localStorage.getItem('pitchView') === 'true') displayOnPitch();
+      });
+      window.addEventListener('beforeunload', () => ping(e.view), { once: true });
+
+      window.addEventListener('message', t => {
+        if (t.data === 'VSL View')            ping(e.view);
+        if (t.data === 'VSL - Lead View')     ping(e.leadview);
+        if (t.data === 'VSL - Play') {
+          ping(e.play);
+          document.querySelectorAll('.hide-on-play').forEach(el => el.style.display = 'none');
+        }
+        if (t.data === 'VSL - 3 View')        ping(e.view3s);
+        if (t.data === 'VSL - 60 View')       ping(e.view60s);
+        if (t.data === 'VSL - 120 View')      ping(e.view120s);
+        if (t.data === 'VSL - 300 View')      ping(e.view300s);
+        if (t.data === 'VSL - Pitch View') {
+          localStorage.setItem('pitchView', 'true');
+          ping(e.pitchView);
+          displayOnPitch();
+        }
+      });
+    } else {
+      console.log('Missing clickid');
+    }
+
+    /* funções do timer / pitch (inalteradas) */
+    function startOfferTimer() { /* ... */ }
+    function displayOnPitch() { /* ... */ }
+  </script>
 
   </body>
 </html>
